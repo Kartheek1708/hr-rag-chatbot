@@ -5,7 +5,7 @@ questions using only the company's own policy documents. Built for the
 Gen AI Project 2: Intelligent RAG challenge — scored 75.29 on the
 leaderboard.
 
-🚀 **Live demo:** _add your Streamlit link here after deploying_
+🚀 **Live demo:** https://hr-rag-chatbot-4g4j7dr38tyokxmcuglsqh.streamlit.app/
 
 ## 🎯 What it does
 
