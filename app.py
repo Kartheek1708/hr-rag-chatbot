@@ -87,10 +87,34 @@ def build_pipeline():
             return {"answer": REFUSAL_MESSAGE, "sources": []}
         return rag_chain(question)
 
-    return ask_bot, len(documents), len(chunks)
+    # number of unique PDF files (not pages)
+    n_files = len({os.path.basename(d.metadata.get("source", "")) for d in documents})
+
+    return ask_bot, n_files, len(chunks)
 
 
 ask_bot, num_docs, num_chunks = build_pipeline()
+
+
+# ---------- Helpers for source citations ----------
+def format_sources(docs, answer):
+    """Return a sorted list of (file_name, page_number). Empty if the bot refused."""
+    normalized = answer.replace("\u2019", "'")  # handle curly apostrophe
+    if "I don't have" in normalized:
+        return []
+    return sorted({
+        (os.path.basename(d.metadata.get("source", "unknown")),
+         int(d.metadata.get("page", 0)) + 1)
+        for d in docs
+    })
+
+
+def show_sources(sources):
+    if sources:
+        with st.expander("📄 Sources"):
+            for name, page in sources:
+                st.write(f"- {name} (page {page})")
+
 
 # ---------- UI ----------
 st.title("💼 HR Assistant Chatbot")
@@ -99,19 +123,23 @@ st.caption(f"Answers grounded in {num_docs} company HR documents ({num_chunks} c
 if "history" not in st.session_state:
     st.session_state.history = []
 
-for role, text in st.session_state.history:
+# history items: (role, text, sources)
+for role, text, sources in st.session_state.history:
     with st.chat_message(role):
         st.write(text)
+        show_sources(sources)
 
 question = st.chat_input("Ask an HR policy question...")
 
 if question:
-    st.session_state.history.append(("user", question))
+    st.session_state.history.append(("user", question, []))
     with st.chat_message("user"):
         st.write(question)
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             result = ask_bot(question)
+        sources = format_sources(result["sources"], result["answer"])
         st.write(result["answer"])
-    st.session_state.history.append(("assistant", result["answer"]))
+        show_sources(sources)
+    st.session_state.history.append(("assistant", result["answer"], sources))
