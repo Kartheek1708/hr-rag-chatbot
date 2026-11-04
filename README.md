@@ -6,6 +6,7 @@ Gen AI Project 2: Intelligent RAG challenge — scored 75.29 on the
 leaderboard.
 
 🚀 **Live demo:** https://hr-rag-chatbot-4g4j7dr38tyokxmcuglsqh.streamlit.app/
+                   
 
 ## 🎯 What it does
 
